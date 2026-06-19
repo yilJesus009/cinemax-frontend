@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #111827;
+  background: #f8fafc;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@layer components {
+  .page-shell {
+    @apply mx-auto grid max-w-7xl gap-6 px-4 py-8;
+  }
+
+  .page-title {
+    @apply text-4xl font-black leading-tight text-night md:text-6xl;
+  }
+
+  .eyebrow {
+    @apply mb-2 text-xs font-black uppercase tracking-[0.2em] text-cinema;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg bg-cinema px-4 py-2.5 text-sm font-black text-white transition hover:bg-red-800;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-black text-slate-700 transition hover:bg-slate-50;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center rounded-lg bg-red-50 px-4 py-2.5 text-sm font-black text-cinema transition hover:bg-red-100;
+  }
+
+  .pill {
+    @apply rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-700;
+  }
+
+  .legend {
+    @apply rounded-full px-3 py-1 text-xs font-black;
+  }
+
+  .field {
+    @apply grid gap-2 text-sm font-black text-slate-700;
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    @apply w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 font-semibold text-night outline-none transition focus:border-cinema focus:ring-4 focus:ring-red-100;
+  }
+
+  .auth-shell {
+    @apply mx-auto grid min-h-[calc(100vh-76px)] max-w-md place-items-center px-4 py-8;
+  }
+
+  .auth-card {
+    @apply grid w-full gap-5 rounded-lg border border-slate-200 bg-white p-6 shadow-soft;
+  }
+
+  .admin-form {
+    @apply grid gap-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm md:grid-cols-2;
+  }
+
+  .admin-row {
+    @apply flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm md:flex-row md:items-center md:justify-between;
+  }
+
+  .empty-state {
+    @apply rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center font-bold text-slate-500;
+  }
+
+  .alert-error {
+    @apply rounded-lg border border-red-200 bg-red-50 p-4 font-bold text-cinema;
+  }
+
+  .alert-ok {
+    @apply rounded-lg border border-green-200 bg-green-50 p-4 font-bold text-green-700;
+  }
+}
