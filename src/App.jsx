@@ -1,7 +1,9 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx';
-import ProtectedRoute from './components/ProtectedRoute.jsx';
-import AdminRoute from './components/AdminRoute.jsx';
+// import ProtectedRoute from './components/ProtectedRoute.jsx';
+// import AdminRoute from './components/AdminRoute.jsx';
+import ProtectedRoute from './routes/ProtectedRoute.jsx';
+import AdminRoute from './routes/AdminRoute.jsx';
 import Cartelera from './pages/public/Cartelera.jsx';
 import DetallePelicula from './pages/public/DetallePelicula.jsx';
 import Login from './pages/public/Login.jsx';
