@@ -71,6 +71,10 @@ button:disabled {
     @apply w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 font-semibold text-night outline-none transition focus:border-cinema focus:ring-4 focus:ring-red-100;
   }
 
+  .field-error {
+    @apply text-sm font-bold text-cinema;
+  }
+
   .auth-shell {
     @apply mx-auto grid min-h-[calc(100vh-76px)] max-w-md place-items-center px-4 py-8;
   }

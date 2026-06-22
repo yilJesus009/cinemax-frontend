@@ -1,21 +1,49 @@
+import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import * as yup from 'yup';
 import { createPelicula, deletePelicula, getPeliculas, updatePelicula } from '../../api/peliculas.js';
 
-const initialForm = {
+const defaultValues = {
   titulo: '',
   sinopsis: '',
   genero: '',
   duracion: '',
-  clasificacion: 'Todo público',
+  clasificacion: 'Todo publico',
   imagenPoster: null
 };
 
+const numberFromInput = (value, originalValue) => (originalValue === '' ? undefined : value);
+
+const peliculaSchema = yup.object({
+  titulo: yup.string().trim().required('El titulo es requerido.'),
+  sinopsis: yup.string().trim().required('La sinopsis es requerida.'),
+  genero: yup.string().trim().required('El genero es requerido.'),
+  duracion: yup
+    .number()
+    .transform(numberFromInput)
+    .typeError('La duracion debe ser un numero.')
+    .positive('La duracion debe ser mayor a 0.')
+    .required('La duracion es requerida.'),
+  clasificacion: yup.string().required('La clasificacion es requerida.'),
+  imagenPoster: yup.mixed().nullable()
+});
+
 export default function AdminPeliculas() {
   const [peliculas, setPeliculas] = useState([]);
-  const [form, setForm] = useState(initialForm);
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting }
+  } = useForm({
+    resolver: yupResolver(peliculaSchema),
+    defaultValues
+  });
 
   const loadPeliculas = async () => {
     setPeliculas(await getPeliculas());
@@ -25,30 +53,27 @@ export default function AdminPeliculas() {
     loadPeliculas().catch((err) => setError(err.message));
   }, []);
 
-  const handleChange = (event) => {
-    const { name, value, files } = event.target;
-    setForm((current) => ({ ...current, [name]: files ? files[0] : value }));
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const onSubmit = async (values) => {
     try {
       setError('');
       setMessage('');
+
       const formData = new FormData();
-      formData.append('titulo', form.titulo);
-      formData.append('sinopsis', form.sinopsis);
-      formData.append('genero', form.genero);
-      formData.append('duracion', form.duracion);
-      formData.append('clasificacion', form.clasificacion);
-      if (form.imagenPoster) formData.append('imagenPoster', form.imagenPoster);
+      formData.append('titulo', values.titulo);
+      formData.append('sinopsis', values.sinopsis);
+      formData.append('genero', values.genero);
+      formData.append('duracion', values.duracion);
+      formData.append('clasificacion', values.clasificacion);
+
+      const poster = values.imagenPoster?.[0];
+      if (poster) formData.append('imagenPoster', poster);
 
       if (editId) {
         await updatePelicula(editId, formData);
-        setMessage('Película actualizada.');
+        setMessage('Pelicula actualizada.');
       } else {
         await createPelicula(formData);
-        setMessage('Película creada.');
+        setMessage('Pelicula creada.');
       }
 
       resetForm();
@@ -60,22 +85,22 @@ export default function AdminPeliculas() {
 
   const startEdit = (pelicula) => {
     setEditId(pelicula.id);
-    setForm({
+    reset({
       titulo: pelicula.titulo || '',
       sinopsis: pelicula.sinopsis || '',
       genero: pelicula.genero || '',
       duracion: pelicula.duracion || '',
-      clasificacion: pelicula.clasificacion || 'Todo público',
+      clasificacion: pelicula.clasificacion || 'Todo publico',
       imagenPoster: null
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('¿Eliminar esta película?')) return;
+    if (!window.confirm('Eliminar esta pelicula?')) return;
     try {
       await deletePelicula(id);
-      setMessage('Película eliminada.');
+      setMessage('Pelicula eliminada.');
       await loadPeliculas();
     } catch (err) {
       setError(err.message);
@@ -84,49 +109,61 @@ export default function AdminPeliculas() {
 
   const resetForm = () => {
     setEditId(null);
-    setForm(initialForm);
-    document.querySelector('#imagenPoster')?.value && (document.querySelector('#imagenPoster').value = '');
+    reset(defaultValues);
   };
 
   return (
     <main className="page-shell">
-      <Header title="Gestión de películas" subtitle="Crear, editar, eliminar y listar películas." />
+      <Header title="Gestion de peliculas" subtitle="Crear, editar, eliminar y listar peliculas." />
 
       {error && <p className="alert-error">{error}</p>}
       {message && <p className="alert-ok">{message}</p>}
 
-      <form className="admin-form" onSubmit={handleSubmit}>
+      <form className="admin-form" onSubmit={handleSubmit(onSubmit)} noValidate>
         <label className="field">
-          Título
-          <input name="titulo" value={form.titulo} onChange={handleChange} required />
+          Titulo
+          <input {...register('titulo')} />
+          {errors.titulo && <span className="field-error">{errors.titulo.message}</span>}
         </label>
+
         <label className="field">
-          Género
-          <input name="genero" value={form.genero} onChange={handleChange} required />
+          Genero
+          <input {...register('genero')} />
+          {errors.genero && <span className="field-error">{errors.genero.message}</span>}
         </label>
+
         <label className="field">
-          Duración
-          <input name="duracion" type="number" min="1" value={form.duracion} onChange={handleChange} required />
+          Duracion
+          <input type="number" min="1" {...register('duracion')} />
+          {errors.duracion && <span className="field-error">{errors.duracion.message}</span>}
         </label>
+
         <label className="field">
-          Clasificación
-          <select name="clasificacion" value={form.clasificacion} onChange={handleChange}>
-            <option>Todo público</option>
-            <option>+14</option>
-            <option>R</option>
+          Clasificacion
+          <select {...register('clasificacion')}>
+            <option value="Todo publico">Todo publico</option>
+            <option value="+14">+14</option>
+            <option value="R">R</option>
           </select>
+          {errors.clasificacion && <span className="field-error">{errors.clasificacion.message}</span>}
         </label>
+
         <label className="field md:col-span-2">
           Sinopsis
-          <textarea name="sinopsis" rows="4" value={form.sinopsis} onChange={handleChange} required />
+          <textarea rows="4" {...register('sinopsis')} />
+          {errors.sinopsis && <span className="field-error">{errors.sinopsis.message}</span>}
         </label>
+
         <label className="field md:col-span-2">
           Imagen del poster
-          <input id="imagenPoster" name="imagenPoster" type="file" accept="image/*" onChange={handleChange} />
+          <input type="file" accept="image/*" {...register('imagenPoster')} />
         </label>
+
         <div className="flex flex-wrap gap-2 md:col-span-2">
-          <button className="btn-primary">{editId ? 'Actualizar película' : 'Crear película'}</button>
-          {editId && <button className="btn-secondary" type="button" onClick={resetForm}>Cancelar edición</button>}
+          <button className="btn-primary" disabled={isSubmitting}>
+            {isSubmitting ? 'Guardando...' : editId ? 'Actualizar pelicula' : 'Crear pelicula'}
+          </button>
+          {editId && <button className="btn-secondary" type="button" onClick={resetForm}>Cancelar edicion</button>}
         </div>
       </form>
 
@@ -136,7 +173,7 @@ export default function AdminPeliculas() {
             <div>
               <h2 className="text-lg font-black text-night">{pelicula.titulo}</h2>
               <p className="text-sm font-semibold text-slate-600">
-                {pelicula.genero} · {pelicula.duracion} min · {pelicula.clasificacion}
+                {pelicula.genero} - {pelicula.duracion} min - {pelicula.clasificacion}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">

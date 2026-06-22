@@ -1,31 +1,55 @@
+import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
+import * as yup from 'yup';
 import { useAuth } from '../../context/AuthContext.jsx';
 
-export default function Register() {
-  const { register } = useAuth();
-  const navigate = useNavigate();
-  const [form, setForm] = useState({ nombre: '', email: '', password: '', role: 'cliente' });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+const registerSchema = yup.object({
+  nombre: yup.string().trim().required('El nombre es requerido.'),
+  email: yup.string().trim().email('Ingresa un email valido.').required('El email es requerido.'),
+  password: yup
+    .string()
+    .min(6, 'La contrasena debe tener al menos 6 caracteres.')
+    .required('La contrasena es requerida.'),
+  confirmPassword: yup
+    .string()
+    .oneOf([yup.ref('password')], 'Las contrasenas no coinciden.')
+    .required('Confirma la contrasena.')
+});
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+export default function Register() {
+  const { register: registerAccount } = useAuth();
+  const navigate = useNavigate();
+  const [error, setError] = useState('');
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting }
+  } = useForm({
+    resolver: yupResolver(registerSchema),
+    defaultValues: {
+      nombre: '',
+      email: '',
+      password: '',
+      confirmPassword: ''
+    }
+  });
+
+  const onSubmit = async ({ confirmPassword, ...values }) => {
     try {
-      setLoading(true);
       setError('');
-      const usuario = await register(form);
+      const usuario = await registerAccount(values);
       navigate(usuario.role === 'admin' ? '/admin/peliculas' : '/', { replace: true });
     } catch (err) {
       setError(err.message);
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
     <main className="auth-shell">
-      <form className="auth-card" onSubmit={handleSubmit}>
+      <form className="auth-card" onSubmit={handleSubmit(onSubmit)} noValidate>
         <div>
           <p className="eyebrow">Nueva cuenta</p>
           <h1 className="text-3xl font-black text-night">Registro</h1>
@@ -35,30 +59,34 @@ export default function Register() {
 
         <label className="field">
           Nombre
-          <input value={form.nombre} onChange={(event) => setForm({ ...form, nombre: event.target.value })} required />
-        </label>
-        <label className="field">
-          Email
-          <input type="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} required />
-        </label>
-        <label className="field">
-          Contraseña
-          <input type="password" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} required />
-        </label>
-        <label className="field">
-          Rol
-          <select value={form.role} onChange={(event) => setForm({ ...form, role: event.target.value })}>
-            <option value="cliente">Cliente</option>
-            <option value="admin">Admin</option>
-          </select>
+          <input autoComplete="name" {...register('nombre')} />
+          {errors.nombre && <span className="field-error">{errors.nombre.message}</span>}
         </label>
 
-        <button className="btn-primary w-full" disabled={loading}>
-          {loading ? 'Creando...' : 'Crear cuenta'}
+        <label className="field">
+          Email
+          <input type="email" autoComplete="email" {...register('email')} />
+          {errors.email && <span className="field-error">{errors.email.message}</span>}
+        </label>
+
+        <label className="field">
+          Contrasena
+          <input type="password" autoComplete="new-password" {...register('password')} />
+          {errors.password && <span className="field-error">{errors.password.message}</span>}
+        </label>
+
+        <label className="field">
+          Confirmar contrasena
+          <input type="password" autoComplete="new-password" {...register('confirmPassword')} />
+          {errors.confirmPassword && <span className="field-error">{errors.confirmPassword.message}</span>}
+        </label>
+
+        <button className="btn-primary w-full" disabled={isSubmitting}>
+          {isSubmitting ? 'Creando...' : 'Crear cuenta'}
         </button>
 
         <p className="text-center text-sm text-slate-600">
-          ¿Ya tenés cuenta? <Link className="font-black text-cinema" to="/login">Entrar</Link>
+          Ya tenes cuenta? <Link className="font-black text-cinema" to="/login">Entrar</Link>
         </p>
       </form>
     </main>
