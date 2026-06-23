@@ -1,10 +1,10 @@
-import { request } from './client.js';
+import { api } from './client.js';
 
-export const loginUser = (payload) => request('/auth/login', { method: 'POST', body: payload });
+export const loginUser = (payload) => api.post('/auth/login', payload);
 
-export const registerUser = (payload) => request('/auth/register', { method: 'POST', body: payload });
+export const registerUser = (payload) => api.post('/auth/register', payload);
 
 export const getMe = async () => {
-  const data = await request('/auth/me', { auth: true });
+  const data = await api.get('/auth/me');
   return data.usuario || data.user || data;
 };

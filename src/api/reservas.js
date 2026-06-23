@@ -1,15 +1,7 @@
-import { request } from './client.js';
+import { api } from './client.js';
 
-export const getAsientosOcupados = (funcionId) => request(`/reserva/funcion/${funcionId}/asientos`, {
-  auth: true
-});
+export const getAsientosOcupados = (funcionId) => api.get(`/reserva/funcion/${funcionId}/asientos`);
 
-export const createReserva = (payload) => request('/reserva', {
-  method: 'POST',
-  auth: true,
-  body: payload
-});
+export const createReserva = (payload) => api.post('/reserva', payload);
 
-export const getMisReservas = () => request('/reserva/mis-reservas', {
-  auth: true
-});
+export const getMisReservas = () => api.get('/reserva/mis-reservas');

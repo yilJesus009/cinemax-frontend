@@ -1,22 +1,11 @@
-import { request } from './client.js';
+import { api } from './client.js';
 
-export const getSalas = () => request('/sala', { auth: true });
+export const getSalas = () => api.get('/sala');
 
-export const getSala = (id) => request(`/sala/${id}`, { auth: true });
+export const getSala = (id) => api.get(`/sala/${id}`);
 
-export const createSala = (payload) => request('/sala', {
-  method: 'POST',
-  auth: true,
-  body: payload
-});
+export const createSala = (payload) => api.post('/sala', payload);
 
-export const updateSala = (id, payload) => request(`/sala/${id}`, {
-  method: 'PUT',
-  auth: true,
-  body: payload
-});
+export const updateSala = (id, payload) => api.put(`/sala/${id}`, payload);
 
-export const deleteSala = (id) => request(`/sala/${id}`, {
-  method: 'DELETE',
-  auth: true
-});
+export const deleteSala = (id) => api.delete(`/sala/${id}`);
